@@ -83,8 +83,9 @@ func (api *API) InitChannel() {
 	api.BaseRoutes.ChannelModerations.Handle("/patch", api.APISessionRequired(patchChannelModerations)).Methods(http.MethodPut)
 
 	// Read receipts / read cursor endpoints
-	api.BaseRoutes.Channel.Handle("/read_cursor", api.APISessionRequired(advanceReadCursor)).Methods(http.MethodPost)
+	api.BaseRoutes.Channel.Handle("/read_cursor/advance", api.APISessionRequired(advanceReadCursor)).Methods(http.MethodPost)
 	api.BaseRoutes.Channel.Handle("/read_cursor", api.APISessionRequired(getReadCursor)).Methods(http.MethodGet)
+	api.BaseRoutes.Channel.Handle("/read_cursors", api.APISessionRequired(getChannelReadCursors)).Methods(http.MethodGet)
 }
 
 func createChannel(c *Context, w http.ResponseWriter, r *http.Request) {
@@ -2640,6 +2641,31 @@ func getReadCursor(c *Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewEncoder(w).Encode(cursor); err != nil {
+		c.Logger.Warn("Error while writing response", mlog.Err(err))
+	}
+}
+
+// getChannelReadCursors returns all read cursors for a channel
+// GET /api/v4/channels/{channel_id}/read_cursors
+func getChannelReadCursors(c *Context, w http.ResponseWriter, r *http.Request) {
+	c.RequireChannelId()
+	if c.Err != nil {
+		return
+	}
+
+	// Check permission to read channel
+	if !c.App.SessionHasPermissionToChannel(c.AppContext, *c.AppContext.Session(), c.Params.ChannelId, model.PermissionReadChannelContent) {
+		c.SetPermissionError(model.PermissionReadChannelContent)
+		return
+	}
+
+	cursors, appErr := c.App.GetChannelReadCursors(c.AppContext, c.Params.ChannelId)
+	if appErr != nil {
+		c.Err = appErr
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(cursors); err != nil {
 		c.Logger.Warn("Error while writing response", mlog.Err(err))
 	}
 }

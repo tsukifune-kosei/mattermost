@@ -49,7 +49,7 @@ advance_cursor() {
     curl -s -X POST "$API_URL/channels/$channel_id/read_cursor/advance" \
         -H "Authorization: Bearer $token" \
         -H "Content-Type: application/json" \
-        -d "{\"new_last_seq\": $seq}"
+        -d "{\"last_post_seq\": $seq}"
 }
 
 echo ""
@@ -126,21 +126,24 @@ echo "6. 模拟用户阅读消息..."
 
 echo "  📖 用户1 阅读消息..."
 USER1_TOKEN=$(login_user "testuser1_$TIMESTAMP" "Password123!")
-advance_cursor "$USER1_TOKEN" "$CHANNEL_ID" "$MESSAGE_SEQ" > /dev/null
+RESULT1=$(advance_cursor "$USER1_TOKEN" "$CHANNEL_ID" "$MESSAGE_SEQ")
+echo "  Response: $RESULT1"
 echo "  ✅ 用户1 已读"
 
 sleep 1
 
 echo "  📖 用户2 阅读消息..."
 USER2_TOKEN=$(login_user "testuser2_$TIMESTAMP" "Password123!")
-advance_cursor "$USER2_TOKEN" "$CHANNEL_ID" "$MESSAGE_SEQ" > /dev/null
+RESULT2=$(advance_cursor "$USER2_TOKEN" "$CHANNEL_ID" "$MESSAGE_SEQ")
+echo "  Response: $RESULT2"
 echo "  ✅ 用户2 已读"
 
 sleep 1
 
 echo "  📖 用户3 阅读消息..."
 USER3_TOKEN=$(login_user "testuser3_$TIMESTAMP" "Password123!")
-advance_cursor "$USER3_TOKEN" "$CHANNEL_ID" "$MESSAGE_SEQ" > /dev/null
+RESULT3=$(advance_cursor "$USER3_TOKEN" "$CHANNEL_ID" "$MESSAGE_SEQ")
+echo "  Response: $RESULT3"
 echo "  ✅ 用户3 已读"
 
 # 查询读回执统计
