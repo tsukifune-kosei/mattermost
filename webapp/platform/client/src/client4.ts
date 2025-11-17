@@ -1929,6 +1929,28 @@ export default class Client4 {
         );
     };
 
+    // Read receipts / read cursor APIs
+    advanceReadCursor = (channelId: string, lastPostSeq?: number, postId?: string) => {
+        const body: {last_post_seq?: number; post_id?: string} = {};
+        if (lastPostSeq) {
+            body.last_post_seq = lastPostSeq;
+        }
+        if (postId) {
+            body.post_id = postId;
+        }
+        return this.doFetch<{channel_id: string; user_id: string; last_post_seq: number; updated_at: number}>(
+            `${this.getChannelRoute(channelId)}/read_cursor`,
+            {method: 'post', body: JSON.stringify(body)},
+        );
+    };
+
+    getReadCursor = (channelId: string) => {
+        return this.doFetch<{channel_id: string; user_id: string; last_post_seq: number; updated_at: number}>(
+            `${this.getChannelRoute(channelId)}/read_cursor`,
+            {method: 'get'},
+        );
+    };
+
     autocompleteChannels = (teamId: string, name: string) => {
         return this.doFetch<Channel[]>(
             `${this.getTeamRoute(teamId)}/channels/autocomplete${buildQueryString({name})}`,
