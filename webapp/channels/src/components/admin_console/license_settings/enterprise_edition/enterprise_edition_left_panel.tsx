@@ -417,40 +417,8 @@ const renderRemoveButton = (
     removing: boolean,
     enableMattermostEntry: string | undefined,
 ) => {
-    const isEntryEnabled = enableMattermostEntry === 'true';
-
-    let removeButtonText;
-    if (removing) {
-        removeButtonText = (
-            <FormattedMessage
-                id='admin.license.removing'
-                defaultMessage='Removing License...'
-            />
-        );
-    } else {
-        removeButtonText = isEntryEnabled ? (
-            <FormattedMessage {...messages.keyRemoveEntry}/>
-        ) : (
-            <FormattedMessage {...messages.keyRemove}/>
-        );
-    }
-
-    return (
-        <>
-            <div className='remove-button'>
-                <button
-                    type='button'
-                    className='btn btn-danger'
-                    onClick={handleRemove}
-                    disabled={isDisabled}
-                    id='remove-button'
-                    data-testid='remove-button'
-                >
-                    {removeButtonText}
-                </button>
-            </div>
-        </>
-    );
+    // Remove button hidden
+    return null;
 };
 
 export default React.memo(EnterpriseEditionLeftPanel);

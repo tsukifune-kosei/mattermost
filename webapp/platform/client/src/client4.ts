@@ -2628,6 +2628,21 @@ export default class Client4 {
         );
     };
 
+    // Read receipts
+    getPostReadReceipts = (postId: string) => {
+        return this.doFetch<Array<{user_id: string; last_post_seq: number; read_at: number}>>(
+            `${this.getPostRoute(postId)}/read_receipts`,
+            {method: 'get'},
+        );
+    };
+
+    getPostReadReceiptsCount = (postId: string) => {
+        return this.doFetch<{count: number}>(
+            `${this.getPostRoute(postId)}/read_receipts/count`,
+            {method: 'get'},
+        );
+    };
+
     // Preference Routes
 
     savePreferences = (userId: string, preferences: PreferenceType[]) => {

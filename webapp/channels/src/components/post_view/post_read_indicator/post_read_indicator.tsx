@@ -10,39 +10,36 @@ type Props = {
     postId: string;
     readCount?: number;
     onClick?: () => void;
+    actions?: {
+        fetchReadReceiptsCount: (postId: string) => void;
+    };
 };
 
 export default class PostReadIndicator extends React.PureComponent<Props> {
+    componentDidMount() {
+        // Fetch read receipts count when component mounts
+        if (this.props.actions?.fetchReadReceiptsCount) {
+            this.props.actions.fetchReadReceiptsCount(this.props.postId);
+        }
+    }
+
     render() {
         const {readCount = 0, onClick} = this.props;
 
-        // Always show for testing - in production, you might want to hide when readCount is 0
+        // Don't show if no one has read
+        if (readCount === 0) {
+            return null;
+        }
+
         return (
             <button
                 className='post-read-indicator'
                 onClick={onClick}
-                aria-label='View read receipts'
+                aria-label={`${readCount} ${readCount === 1 ? 'person has' : 'people have'} read this message`}
+                title={`${readCount} ${readCount === 1 ? 'person has' : 'people have'} read this message`}
             >
-                <i className='icon icon-check-all'/>
-                <span className='read-count'>
-                    {readCount === 0 ? (
-                        <FormattedMessage
-                            id='post.read_indicator.none'
-                            defaultMessage='Not read yet'
-                        />
-                    ) : readCount === 1 ? (
-                        <FormattedMessage
-                            id='post.read_indicator.one'
-                            defaultMessage='1 read'
-                        />
-                    ) : (
-                        <FormattedMessage
-                            id='post.read_indicator.many'
-                            defaultMessage='{count} read'
-                            values={{count: readCount}}
-                        />
-                    )}
-                </span>
+                <i className='icon icon-eye-outline'/>
+                <span className='read-count'>{readCount}</span>
             </button>
         );
     }

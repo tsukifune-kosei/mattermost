@@ -22,6 +22,9 @@ const EnterpriseEditionRightPanel = ({
     isTrialLicense,
     license,
 }: EnterpriseEditionProps) => {
+    // Completely hide the promotional right panel
+    return null;
+    
     const intl = useIntl();
     const [openContactSales] = useOpenSalesLink();
     const upgradeAdvantages = [
@@ -109,12 +112,7 @@ const EnterpriseEditionRightPanel = ({
             );
         }
         if (isEnterpriseAdvanced) {
-            return (
-                <FormattedMessage
-                    id='admin.license.enterprisePlanTitle'
-                    defaultMessage='Need to increase your headcount?'
-                />
-            );
+            return null; // Removed promotional message
         }
         if (isEnterprise) {
             return (

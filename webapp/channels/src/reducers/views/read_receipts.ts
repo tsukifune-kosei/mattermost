@@ -28,6 +28,21 @@ function cursors(state: ReadReceiptsState['cursors'] = {}, action: AnyAction): R
     }
 }
 
+function postReadCounts(state: Record<string, number> = {}, action: AnyAction): Record<string, number> {
+    switch (action.type) {
+    case ActionTypes.RECEIVED_READ_RECEIPTS_COUNT: {
+        const {postId, count} = action.data;
+        return {
+            ...state,
+            [postId]: count,
+        };
+    }
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     cursors,
+    postReadCounts,
 });

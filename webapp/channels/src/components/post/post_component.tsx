@@ -31,7 +31,7 @@ import PostBodyAdditionalContent from 'components/post_view/post_body_additional
 import PostMessageContainer from 'components/post_view/post_message_view';
 import PostPreHeader from 'components/post_view/post_pre_header';
 import PostTime from 'components/post_view/post_time';
-import PostReadIndicator from 'components/post_view/post_read_indicator';
+import PostReadIndicator from 'components/post_view/post_read_indicator_container';
 import ReactionList from 'components/post_view/reaction_list';
 import ThreadFooter from 'components/threading/channel_threads/thread_footer';
 import type {Props as TimestampProps} from 'components/timestamp/timestamp';
@@ -667,11 +667,7 @@ function PostComponent(props: Props) {
                                     />
                                 )}
                                 {showReactions && <ReactionList post={post}/>}
-                                <PostReadIndicator
-                                    postId={post.id}
-                                    readCount={0}
-                                    onClick={() => {}}
-                                />
+                                {!isSystemMessage && <PostReadIndicator postId={post.id}/>}
                             </div>
                             {threadFooter}
                         </div>

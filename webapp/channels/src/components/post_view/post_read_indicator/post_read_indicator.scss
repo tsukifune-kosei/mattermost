@@ -4,28 +4,62 @@
 .post-read-indicator {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
+    gap: 3px;
+    padding: 0 4px;
     margin-left: 8px;
-    font-size: 12px;
-    color: rgba(var(--center-channel-color-rgb), 0.64);
     background: transparent;
     border: none;
-    border-radius: 4px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: rgba(var(--center-channel-color-rgb), 0.56);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.1s ease;
+    height: 18px;
+    line-height: 1;
 
     &:hover {
-        color: var(--center-channel-color);
-        background: rgba(var(--center-channel-color-rgb), 0.08);
+        background: rgba(var(--button-bg-rgb), 0.08);
+        color: var(--button-bg);
     }
 
     .icon {
-        font-size: 14px;
-        color: var(--link-color);
+        font-size: 13px;
+        opacity: 0.8;
+        
+        &::before {
+            margin: 0;
+        }
     }
 
     .read-count {
-        font-weight: 600;
+        font-weight: 500;
+        font-size: 11px;
+        line-height: 1;
+        padding-top: 1px;
+    }
+
+    // Compact mode
+    .post--compact & {
+        height: 16px;
+        font-size: 10px;
+        gap: 2px;
+
+        .icon {
+            font-size: 12px;
+        }
+
+        .read-count {
+            font-size: 10px;
+        }
+    }
+
+    // Dark theme
+    .theme--dark & {
+        color: rgba(255, 255, 255, 0.56);
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.8);
+        }
     }
 }
