@@ -38,8 +38,9 @@ export default class PostReadIndicator extends React.PureComponent<Props> {
                 aria-label={`${readCount} ${readCount === 1 ? 'person has' : 'people have'} read this message`}
                 title={`${readCount} ${readCount === 1 ? 'person has' : 'people have'} read this message`}
             >
-                <i className='icon icon-eye-outline'/>
-                <span className='read-count'>{readCount}</span>
+                <span className='read-count'>
+                    {readCount === 1 ? '1 read' : `${readCount} read`}
+                </span>
             </button>
         );
     }

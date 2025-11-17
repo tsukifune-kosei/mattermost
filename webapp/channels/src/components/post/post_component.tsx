@@ -589,6 +589,7 @@ function PostComponent(props: Props) {
                                         timestampProps={{...props.timestampProps, style: props.isConsecutivePost && !props.compactDisplay ? 'narrow' : undefined}}
                                     />
                                 }
+                                {!isSystemMessage && <PostReadIndicator postId={post.id}/>}
                                 {priority}
                                 {Boolean(post.props && post.props.ai_generated_by && post.props.ai_generated_by_username) &&
                                     typeof post.props.ai_generated_by === 'string' &&
@@ -667,7 +668,6 @@ function PostComponent(props: Props) {
                                     />
                                 )}
                                 {showReactions && <ReactionList post={post}/>}
-                                {!isSystemMessage && <PostReadIndicator postId={post.id}/>}
                             </div>
                             {threadFooter}
                         </div>
