@@ -1284,6 +1284,7 @@
     }
 
     .post__img {
+        position: relative; // For read indicator positioning
         width: 53px; // if this changes, the width of post-pre-header__icons-container needs to be adjusted accordingly
         padding-right: 10px; // if this changes, the padding of post-pre-header__icons-container needs to be adjusted accordingly
         text-align: right;

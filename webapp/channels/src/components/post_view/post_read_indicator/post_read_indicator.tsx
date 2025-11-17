@@ -16,10 +16,22 @@ type Props = {
 };
 
 export default class PostReadIndicator extends React.PureComponent<Props> {
+    private fetchTimeout?: NodeJS.Timeout;
+
     componentDidMount() {
-        // Fetch read receipts count when component mounts
-        if (this.props.actions?.fetchReadReceiptsCount) {
-            this.props.actions.fetchReadReceiptsCount(this.props.postId);
+        // Debounce API call - only fetch after component has been visible for a bit
+        // This prevents excessive API calls when scrolling through messages
+        this.fetchTimeout = setTimeout(() => {
+            if (this.props.actions?.fetchReadReceiptsCount) {
+                this.props.actions.fetchReadReceiptsCount(this.props.postId);
+            }
+        }, 500);
+    }
+
+    componentWillUnmount() {
+        // Cancel pending fetch if component unmounts
+        if (this.fetchTimeout) {
+            clearTimeout(this.fetchTimeout);
         }
     }
 

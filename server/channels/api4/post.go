@@ -1449,7 +1449,7 @@ func getPostReadReceipts(c *Context, w http.ResponseWriter, r *http.Request) {
 	// Filter cursors that have read this post (cursor >= post.CreateAt)
 	var readReceipts []map[string]interface{}
 	for _, cursor := range cursors {
-		if cursor.LastPostSeq >= post.CreateAt {
+		if cursor.UserId != post.UserId && cursor.LastPostSeq >= post.CreateAt {
 			readReceipts = append(readReceipts, map[string]interface{}{
 				"user_id":       cursor.UserId,
 				"last_post_seq": cursor.LastPostSeq,
@@ -1472,6 +1472,18 @@ func getPostReadReceiptsCount(c *Context, w http.ResponseWriter, r *http.Request
 
 	postId := c.Params.PostId
 
+	// Try to get from cache first
+	cacheKey := fmt.Sprintf("post_read_count:%s", postId)
+	if count, ok := c.App.Srv().Store().GetCache().Get(cacheKey); ok {
+		if cachedCount, ok := count.(int); ok {
+			response := map[string]int{"count": cachedCount}
+			if err := json.NewEncoder(w).Encode(response); err != nil {
+				c.Logger.Warn("Error encoding cached read count", mlog.Err(err))
+			}
+			return
+		}
+	}
+
 	// Get the post to find its channel and timestamp
 	post, appErr := c.App.GetSinglePost(c.AppContext, postId, false)
 	if appErr != nil {
@@ -1493,12 +1505,16 @@ func getPostReadReceiptsCount(c *Context, w http.ResponseWriter, r *http.Request
 	}
 
 	// Count cursors that have read this post
+	// Exclude the post author (users don't count as reading their own messages)
 	count := 0
 	for _, cursor := range cursors {
-		if cursor.LastPostSeq >= post.CreateAt {
+		if cursor.UserId != post.UserId && cursor.LastPostSeq >= post.CreateAt {
 			count++
 		}
 	}
+
+	// Cache the result for 30 seconds to reduce database load
+	c.App.Srv().Store().GetCache().SetWithExpiry(cacheKey, count, 30)
 
 	response := map[string]int{"count": count}
 	if err := json.NewEncoder(w).Encode(response); err != nil {

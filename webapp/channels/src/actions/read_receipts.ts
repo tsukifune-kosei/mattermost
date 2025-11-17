@@ -51,8 +51,25 @@ export function receivedReadCursorFromWebSocket(cursor: ReadCursor) {
     };
 }
 
+// Track in-flight requests to prevent duplicate API calls
+const pendingRequests = new Set<string>();
+
 export function fetchReadReceiptsCount(postId: string): ActionFuncAsync<{count: number}> {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
+        // Check if already fetched or in progress
+        const state = getState();
+        const existingCount = state.views.readReceipts?.postReadCounts?.[postId];
+        if (existingCount !== undefined) {
+            return {data: {count: existingCount}};
+        }
+
+        // Prevent duplicate requests
+        if (pendingRequests.has(postId)) {
+            return {data: {count: 0}};
+        }
+
+        pendingRequests.add(postId);
+
         try {
             const result = await Client4.getPostReadReceiptsCount(postId);
             
@@ -67,6 +84,8 @@ export function fetchReadReceiptsCount(postId: string): ActionFuncAsync<{count: 
             return {data: result};
         } catch (error) {
             return {error};
+        } finally {
+            pendingRequests.delete(postId);
         }
     };
 }
