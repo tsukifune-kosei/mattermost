@@ -27,13 +27,13 @@
 - [x] WebSocket 事件推送 ✅
 - [ ] 事件流：Redis Stream（占位符已添加，待 Phase 2 实现）
 
-### Phase 2: ReadIndexService 实现（1-2 周）
-- [ ] 实现 ReadIndexService Go 服务
-- [ ] RoaringBitmap 分段索引
-- [ ] Redis Stream 事件消费
-- [ ] HTTP API 端点（查询已读用户）
-- [ ] 滑动窗口和数据清理
-- [ ] 与 Mattermost Server 集成
+### Phase 2: ReadIndexService 实现 ✅ **已完成**
+- [x] 实现 ReadIndexService Go 服务
+- [x] RoaringBitmap 分段索引
+- [x] Redis Stream 事件消费
+- [x] HTTP API 端点（查询已读用户）
+- [x] 滑动窗口和数据清理
+- [x] Docker 部署配置
 
 ### Phase 3: 前端 UI 展示（1-2 周）
 - [ ] 消息下方显示已读计数
