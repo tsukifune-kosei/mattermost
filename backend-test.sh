@@ -121,13 +121,13 @@ fi
 echo ""
 echo "6. 验证数据库..."
 if command -v docker &> /dev/null; then
-    DB_RESULT=$(docker exec mattermost-postgres psql -U mmuser -d mattermost -t -c \
+    DB_RESULT=$(docker exec -e PGPASSWORD=mostest mattermost-postgres psql -U mmuser -d mattermost_test -t -c \
         "SELECT COUNT(*) FROM channel_read_cursors WHERE channel_id='$CHANNEL_ID' AND user_id='$USER_ID';" 2>/dev/null || echo "0")
     
     if [ "$DB_RESULT" -gt 0 ]; then
         echo "✅ 数据库中有 $DB_RESULT 条记录"
-        docker exec mattermost-postgres psql -U mmuser -d mattermost -c \
-            "SELECT channel_id, user_id, last_post_seq, to_timestamp(updated_at/1000) FROM channel_read_cursors WHERE channel_id='$CHANNEL_ID' AND user_id='$USER_ID';"
+        docker exec -e PGPASSWORD=mostest mattermost-postgres psql -U mmuser -d mattermost_test -c \
+            "SELECT channel_id, user_id, last_post_seq, to_timestamp(updated_at/1000) as updated_time FROM channel_read_cursors WHERE channel_id='$CHANNEL_ID' AND user_id='$USER_ID';"
     else
         echo "⚠️  数据库中没有记录"
     fi
