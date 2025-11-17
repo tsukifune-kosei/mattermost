@@ -326,12 +326,8 @@ export default class LicenseSettings extends React.PureComponent<Props, State> {
                 />
             );
 
-            rightPanel = (
-                <EnterpriseEditionRightPanel
-                    isTrialLicense={isTrialLicense(license)}
-                    license={license}
-                />
-            );
+            // Removed promotional right panel
+            rightPanel = null;
         } else {
             // Note: DO NOT LOCALISE THESE STRINGS. Legally we can not since the license is in English.
             // This is Mattermost Starter (Already downloaded the binary but no license has been set, or ended the trial period)
@@ -390,12 +386,14 @@ export default class LicenseSettings extends React.PureComponent<Props, State> {
                                 </div>
                                 {(!isTrialLicense(license)) && this.termsAndPolicy}
                             </div>
-                            <div className='right-panel'>
-                                <div className={classNames('panel-card', {entry: license.SkuShortName === LicenseSkus.Entry})}>
-                                    {rightPanel}
+                            {rightPanel && (
+                                <div className='right-panel'>
+                                    <div className={classNames('panel-card', {entry: license.SkuShortName === LicenseSkus.Entry})}>
+                                        {rightPanel}
+                                    </div>
+                                    {!isEnterpriseLicense(license) && this.comparePlans}
                                 </div>
-                                {!isEnterpriseLicense(license) && this.comparePlans}
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>

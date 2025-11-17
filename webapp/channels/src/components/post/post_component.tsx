@@ -579,17 +579,19 @@ function PostComponent(props: Props) {
                                 isSystemMessage={isSystemMessage}
                             />
                             <div className='col d-flex align-items-center'>
-                                {((!hideProfilePicture && props.location === Locations.CENTER) || hover || props.location !== Locations.CENTER) &&
-                                    <PostTime
-                                        isPermalink={!(Posts.POST_DELETED === post.state || isPostPendingOrFailed(post))}
-                                        teamName={props.team?.name}
-                                        eventTime={post.create_at}
-                                        postId={post.id}
-                                        location={props.location}
-                                        timestampProps={{...props.timestampProps, style: props.isConsecutivePost && !props.compactDisplay ? 'narrow' : undefined}}
-                                    />
-                                }
-                                {!isSystemMessage && <PostReadIndicator postId={post.id}/>}
+                                {((!hideProfilePicture && props.location === Locations.CENTER) || hover || props.location !== Locations.CENTER) && (
+                                    <>
+                                        <PostTime
+                                            isPermalink={!(Posts.POST_DELETED === post.state || isPostPendingOrFailed(post))}
+                                            teamName={props.team?.name}
+                                            eventTime={post.create_at}
+                                            postId={post.id}
+                                            location={props.location}
+                                            timestampProps={{...props.timestampProps, style: props.isConsecutivePost && !props.compactDisplay ? 'narrow' : undefined}}
+                                        />
+                                        {!isSystemMessage && <PostReadIndicator postId={post.id}/>}
+                                    </>
+                                )}
                                 {priority}
                                 {Boolean(post.props && post.props.ai_generated_by && post.props.ai_generated_by_username) &&
                                     typeof post.props.ai_generated_by === 'string' &&
