@@ -55,10 +55,18 @@ cd /opt/mattermost/server
 # 强制重新创建 go.work 文件以确保路径正确
 echo "重新创建 go.work 文件..."
 rm -f go.work go.work.sum
-go work init
-go work use .
-go work use ./public
-go work use ../enterprise
+
+# 直接写入 go.work 文件内容（不依赖 go 命令）
+cat > go.work << 'GOWORK'
+go 1.24.6
+
+use (
+	.
+	./public
+	../enterprise
+)
+GOWORK
+
 echo "✅ go.work 文件已创建"
 
 # 验证 go.work 内容
@@ -73,17 +81,6 @@ ls -la ../enterprise/ | head -10
 echo ""
 echo "📄 检查 enterprise/go.mod:"
 cat ../enterprise/go.mod
-
-# 清理 Go 模块缓存并下载依赖
-echo ""
-echo "📥 预下载 Go 依赖..."
-cd /opt/mattermost/server
-go mod download
-cd /opt/mattermost/enterprise
-go mod download
-cd /opt/mattermost/server/public
-go mod download
-echo "✅ Go 依赖已下载"
 EOF
 
 # 3. 停止现有容器并清理
