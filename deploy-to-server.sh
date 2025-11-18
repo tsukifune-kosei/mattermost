@@ -19,7 +19,7 @@ echo "=========================================="
 echo ""
 
 # 1. 从 GitHub 克隆或更新代码
-echo "📦 步骤 1/4: 从 GitHub 拉取代码..."
+echo "📦 步骤 1/3: 从 GitHub 拉取代码..."
 ssh ${SERVER_USER}@${SERVER_IP} << EOF
 # 检查目录是否存在
 if [ -d "${SERVER_PATH}/.git" ]; then
@@ -46,41 +46,9 @@ git log -1 --oneline
 git status --short
 EOF
 
-# 2. 设置 go.work 文件
+# 2. 停止现有容器并清理
 echo ""
-echo "🔨 步骤 2/4: 设置 Go workspace..."
-ssh ${SERVER_USER}@${SERVER_IP} << 'EOF'
-cd /opt/mattermost/server
-
-# 强制重新创建 go.work 文件以确保路径正确
-echo "重新创建 go.work 文件..."
-rm -f go.work go.work.sum
-go work init
-go work use .
-go work use ./public
-go work use ../enterprise
-echo "✅ go.work 文件已创建"
-
-# 验证 go.work 内容
-echo ""
-echo "📄 go.work 文件内容:"
-cat go.work
-
-# 清理 Go 模块缓存并下载依赖
-echo ""
-echo "📥 预下载 Go 依赖..."
-cd /opt/mattermost/server
-go mod download
-cd /opt/mattermost/enterprise
-go mod download
-cd /opt/mattermost/server/public
-go mod download
-echo "✅ Go 依赖已下载"
-EOF
-
-# 3. 停止现有容器并清理
-echo ""
-echo "🛑 步骤 3/4: 停止现有容器并清理..."
+echo "🛑 步骤 2/3: 停止现有容器并清理..."
 ssh ${SERVER_USER}@${SERVER_IP} << 'EOF'
 cd /opt/mattermost/server
 docker compose down
@@ -91,9 +59,9 @@ docker rmi -f server-leader server-follower server-follower2 2>/dev/null || true
 echo "✅ 容器已停止，镜像已清理"
 EOF
 
-# 4. 启动服务
+# 3. 启动服务
 echo ""
-echo "🚀 步骤 4/4: 启动 Mattermost HA 集群..."
+echo "🚀 步骤 3/3: 启动 Mattermost HA 集群..."
 ssh ${SERVER_USER}@${SERVER_IP} << 'EOF'
 cd /opt/mattermost/server
 

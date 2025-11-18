@@ -12,6 +12,10 @@ ENV PATH="/root/.nvm/versions/node/v$NODE_VERSION/bin:$PATH"
 
 RUN git config --global --add safe.directory /mattermost
 
-# Remove any existing entrypoint, and use bash as the default command
-ENTRYPOINT []
+# Copy and set up entrypoint script
+COPY build/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Use custom entrypoint to set up go.work before running commands
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["bash"]
