@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Mattermost 服务器部署脚本
-# 用途: 将本地代码同步到远程服务器并启动 HA 集群
+# 用途: 从 GitHub 拉取代码到远程服务器并启动 HA 集群
 # 仓库: https://github.com/AvatoLabs/mattermost
 
 set -e  # 遇到错误立即退出
@@ -10,88 +10,90 @@ set -e  # 遇到错误立即退出
 SERVER_IP="8.218.215.103"
 SERVER_USER="root"
 SERVER_PATH="/opt/mattermost"
-LOCAL_PATH="/Users/arthur/RustroverProjects/mattermost"
+GIT_REPO="https://github.com/AvatoLabs/mattermost.git"
+GIT_BRANCH="master"  # 可以修改为其他分支
 
 echo "=========================================="
 echo "Mattermost 服务器部署脚本"
 echo "=========================================="
 echo ""
 
-# 1. 同步代码到服务器
-echo "📦 步骤 1/5: 同步代码到服务器..."
-echo "正在同步 server 目录..."
-rsync -avz --progress \
-  --exclude 'node_modules' \
-  --exclude '.git' \
-  --exclude 'bin' \
-  --exclude 'logs' \
-  --exclude 'data' \
-  --exclude 'plugins' \
-  "${LOCAL_PATH}/server/" "${SERVER_USER}@${SERVER_IP}:${SERVER_PATH}/server/"
+# 1. 从 GitHub 克隆或更新代码
+echo "📦 步骤 1/4: 从 GitHub 拉取代码..."
+ssh ${SERVER_USER}@${SERVER_IP} << EOF
+# 检查目录是否存在
+if [ -d "${SERVER_PATH}/.git" ]; then
+  echo "代码仓库已存在，执行 git pull 更新..."
+  cd ${SERVER_PATH}
+  git fetch origin
+  git reset --hard origin/${GIT_BRANCH}
+  git clean -fdx
+  echo "✅ 代码已更新到最新版本"
+else
+  echo "首次部署，克隆代码仓库..."
+  rm -rf ${SERVER_PATH}
+  git clone ${GIT_REPO} ${SERVER_PATH}
+  cd ${SERVER_PATH}
+  git checkout ${GIT_BRANCH}
+  echo "✅ 代码已克隆"
+fi
 
+# 显示当前版本信息
 echo ""
-echo "正在同步 enterprise 目录..."
-rsync -avz --progress \
-  --exclude 'node_modules' \
-  --exclude '.git' \
-  "${LOCAL_PATH}/enterprise/" "${SERVER_USER}@${SERVER_IP}:${SERVER_PATH}/enterprise/"
+echo "� 当前代码版本:"
+cd ${SERVER_PATH}
+git log -1 --oneline
+git status --short
+EOF
 
+# 2. 设置 go.work 文件
 echo ""
-echo "正在同步 webapp 目录..."
-rsync -avz --progress \
-  --exclude 'node_modules' \
-  --exclude '.git' \
-  --exclude 'dist' \
-  --exclude 'build' \
-  "${LOCAL_PATH}/webapp/" "${SERVER_USER}@${SERVER_IP}:${SERVER_PATH}/webapp/"
-
-# 2. 修复 docker-compose.yaml 中的命令
-echo ""
-echo "🔧 步骤 2/5: 修复 docker-compose.yaml 配置..."
+echo "🔨 步骤 2/4: 设置 Go workspace..."
 ssh ${SERVER_USER}@${SERVER_IP} << 'EOF'
 cd /opt/mattermost/server
 
-# 将 build-server 替换为 run-server
-if grep -q "build-server" docker-compose.yaml; then
-  echo "修复 docker-compose.yaml 中的命令..."
-  sed -i "s/command: \['make', 'build-server'\]/command: ['make', 'run-server']/g" docker-compose.yaml
-  echo "✅ 已将 build-server 替换为 run-server"
-else
-  echo "✅ docker-compose.yaml 已经是正确的配置"
-fi
-EOF
+# 强制重新创建 go.work 文件以确保路径正确
+echo "重新创建 go.work 文件..."
+rm -f go.work go.work.sum
+go work init
+go work use .
+go work use ./public
+go work use ../enterprise
+echo "✅ go.work 文件已创建"
 
-# 3. 设置 go.work 文件
+# 验证 go.work 内容
 echo ""
-echo "🔨 步骤 3/5: 设置 Go workspace..."
-ssh ${SERVER_USER}@${SERVER_IP} << 'EOF'
+echo "📄 go.work 文件内容:"
+cat go.work
+
+# 清理 Go 模块缓存并下载依赖
+echo ""
+echo "📥 预下载 Go 依赖..."
 cd /opt/mattermost/server
-
-# 检查 go.work 是否存在
-if [ ! -f go.work ]; then
-  echo "创建 go.work 文件..."
-  go work init
-  go work use .
-  go work use ./public
-  go work use ../enterprise
-  echo "✅ go.work 文件已创建"
-else
-  echo "✅ go.work 文件已存在"
-fi
+go mod download
+cd /opt/mattermost/enterprise
+go mod download
+cd /opt/mattermost/server/public
+go mod download
+echo "✅ Go 依赖已下载"
 EOF
 
-# 4. 停止现有容器
+# 3. 停止现有容器并清理
 echo ""
-echo "🛑 步骤 4/5: 停止现有容器..."
+echo "🛑 步骤 3/4: 停止现有容器并清理..."
 ssh ${SERVER_USER}@${SERVER_IP} << 'EOF'
 cd /opt/mattermost/server
 docker compose down
-echo "✅ 容器已停止"
+
+# 清理旧的构建镜像以避免缓存问题
+echo "清理旧的 Docker 镜像..."
+docker rmi -f server-leader server-follower server-follower2 2>/dev/null || true
+echo "✅ 容器已停止，镜像已清理"
 EOF
 
-# 5. 启动服务
+# 4. 启动服务
 echo ""
-echo "🚀 步骤 5/5: 启动 Mattermost HA 集群..."
+echo "🚀 步骤 4/4: 启动 Mattermost HA 集群..."
 ssh ${SERVER_USER}@${SERVER_IP} << 'EOF'
 cd /opt/mattermost/server
 
